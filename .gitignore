@@ -1,1 +1,52 @@
+# Secrets and credentials
+*.env
+*.key
+*.pem
+*.pfx
+*.p12
+credentials/
+secrets/
+passwords/
 
+# Virtual machines and disk images
+*.iso
+*.vdi
+*.vmdk
+*.vhd
+*.vhdx
+*.ova
+*.ovf
+
+# Logs
+*.log
+logs/
+
+# Network captures
+*.pcap
+*.pcapng
+
+# Wazuh / SIEM exports
+alerts/
+archives/
+wazuh-data/
+wazuh-backups/
+
+# Backups and archives
+*.bak
+*.backup
+*.zip
+*.7z
+*.tar
+*.tar.gz
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# IDE / OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
