@@ -269,14 +269,3 @@ The goal is to document not only the final alert, but also the reasoning used to
 
 ---
 
-## Project Status Flow
-
-```text
-Infrastructure              ✅
-Logging & Auditing          ✅
-Attack / Detection         🚧
-Wazuh Detection             🚧
-Detection Engineering      🚧
-Investigation / IR          🚧
-Documentation               🚧
-```
