@@ -243,30 +243,6 @@ The goal is to document not only the final alert, but also the reasoning used to
 * PowerShell
 * Windows Event Viewer
 
----
-
-## Related CyberHomeLab Projects
-
-This project is part of the larger **CyberHomeLab**.
-
-### 01 - Virtual Network
-
-Builds the segmented virtual network, OPNsense firewall, routing, NAT, DHCP, DNS and network isolation.
-
-### 02 - Active Directory PAM Lab
-
-Builds the Windows Active Directory environment with users, groups, OUs, Group Policy, privileged accounts, service accounts and least-privilege administration.
-
-### 03 - Wazuh SOC Lab
-
-Adds security monitoring, Windows telemetry, detection, investigation and incident response capabilities on top of the previous projects.
-
-### 04 - Adversary Simulation Lab
-
-Planned future project focused on the attacker perspective and full attack-path simulation.
-
----
-
 ## Current Status
 
 🚧 **In Progress**
