@@ -1,14 +1,15 @@
+
 # 03 - Wazuh SOC Lab
 
-A hands-on **Security Operations Center (SOC) lab** built on top of the virtual network and Active Directory environments created in the previous CyberHomeLab projects.
+A hands-on SOC lab built around Wazuh, Windows and Active Directory.
 
-The project focuses on **security monitoring, Windows event collection, detection, investigation, and incident response** using Wazuh.
+The project focuses on collecting Windows security telemetry, detecting security-related activity and validating the full logging and detection pipeline.
 
 ---
 
 ## Lab Architecture
 
-```text
+~~~text
                          ATTACK-LAN
                        10.10.50.0/24
                              │
@@ -26,246 +27,281 @@ The project focuses on **security monitoring, Windows event collection, detectio
           ┌──────────────────┼──────────────────┐
           │                  │                  │
           ▼                  ▼                  ▼
-        DC01         CLT-WIN11-01            Wazuh
-     10.10.20.10      10.10.20.120         10.10.20.110
-     Active            Windows 11        Ubuntu Server
-     Directory                            Wazuh Manager
-```
-
-The network itself was created in the previous CyberHomeLab projects.
+        DC01          CLT-WIN11-01           Wazuh
+     10.10.20.10      10.10.20.120        10.10.20.110
+     Active             Windows 11        Ubuntu Server
+     Directory
+~~~
 
 ---
 
 ## Project Goals
 
-The main goal is to build a small but realistic SOC environment where security activity on Windows systems can be:
+The main objective was to build and validate a functional SOC monitoring environment capable of:
 
-* collected
-* monitored
-* detected
-* investigated
-* documented
-* used to improve security detections
+- collecting Windows security events
+- monitoring endpoint activity
+- detecting common security events
+- detecting persistence-related activity
+- monitoring file changes
+- collecting PowerShell activity
+- investigating raw events and alerts in Wazuh
 
-The project will gradually move from basic event visibility toward a complete detection and incident-response workflow.
+The objectives above were successfully achieved.
 
 ---
 
 ## 01. Infrastructure ✅
 
-The infrastructure used by this project was built in the previous CyberHomeLab projects.
+The Wazuh SOC environment was deployed on top of the existing CyberLab infrastructure.
 
-Current environment:
+Implemented and working:
 
-* OPNsense firewall
-* LAB-LAN: `10.10.20.0/24`
-* ATTACK-LAN: `10.10.50.0/24`
-* DC01: `10.10.20.10`
-* CLT-WIN11-01: `10.10.20.120`
-* Ubuntu / Wazuh: `10.10.20.110`
-* Kali Linux: `10.10.50.10`
+- OPNsense firewall
+- LAB-LAN segmentation
+- ATTACK-LAN segmentation
+- Ubuntu Server running Wazuh
+- Wazuh Dashboard
+- Windows 11 endpoint
+- Wazuh Agent deployment
+- Active Directory environment
 
-The environment is intentionally segmented between the laboratory network and attacker network.
+Current endpoints:
+
+- DC01 — `10.10.20.10`
+- CLT-WIN11-01 — `10.10.20.120`
+- Wazuh Server — `10.10.20.110`
+- Kali Linux — `10.10.50.10`
 
 ---
 
 ## 02. Logging & Auditing ✅
 
-Windows security auditing has been configured to provide the telemetry required for SOC investigation.
+Windows security auditing was configured and successfully integrated with Wazuh.
 
-Implemented:
+Working telemetry includes:
 
-* Windows Advanced Audit Policy
-* Windows Security Event Log collection
-* Authentication auditing
-* Account-related security events
-* Process-related security events
-* Active Directory security auditing
-* Wazuh Agent deployment
-* Wazuh endpoint monitoring
+- Windows Security events
+- Windows System events
+- Windows Application events
+- Authentication events
+- Account management events
+- Process creation events
+- Privilege-related events
+- Audit policy changes
+- PowerShell Operational events
+- Task Scheduler Operational events
 
-Windows security events are successfully being received by Wazuh.
-
----
-
-## 03.Detection Scenarios 🚧
-
-This phase is currently in progress.
-
-Controlled security scenarios will be performed inside the isolated lab to generate realistic security events and test the detection capabilities of the SOC environment.
-
-Planned scenarios include:
-
-* Failed logons
-* Account discovery
-* PowerShell activity
-* Process creation
-* Privilege escalation
-* Persistence
-* Active Directory changes
-* Lateral movement
-
-The purpose of these scenarios is to generate observable activity that can later be investigated from the defensive side.
+Windows events are successfully received by the Wazuh Agent and processed by the Wazuh Manager.
 
 ---
 
-## 04. Wazuh Detection 🚧
+## 03. Detection Scenarios ✅
 
-Each security scenario will be analyzed from the Wazuh perspective.
+Multiple controlled security scenarios were executed on the Windows endpoint and successfully detected or collected by Wazuh.
 
-The investigation will follow:
+Tested events include:
 
-```text
-Security Activity
-       ↓
-Windows Event / Artifact
-       ↓
+- Failed logon — Event ID `4625`
+- Process creation — Event ID `4688`
+- Scheduled task creation — Event ID `4698`
+- Windows service creation — Event ID `7045`
+- Special privileges assigned — Event ID `4672`
+- Audit policy change — Event ID `4719`
+- PowerShell Script Block Logging — Event ID `4104`
+- File creation
+- File deletion
+- User/account management activity
+
+---
+
+## 04. Wazuh Detection ✅
+
+The detection pipeline was successfully validated:
+
+~~~text
+Windows Activity
+      ↓
+Windows Event
+      ↓
 Wazuh Agent
-       ↓
+      ↓
 Wazuh Manager
-       ↓
-Wazuh Alert
-       ↓
-Investigation
-```
+      ↓
+Alert / Archive
+      ↓
+Wazuh Dashboard
+~~~
 
-For each scenario, the objective is to determine:
+Examples of verified Wazuh detections:
 
-* What happened?
-* Which host was involved?
-* Which user was involved?
-* Which Windows event was generated?
-* Did Wazuh detect the activity?
-* Which Wazuh rule generated the alert?
-* What information is available for investigation?
-* What additional evidence would be useful?
+- Event `4688` → Rule `67027`
+- Event `4698` → Rule `60228`
+- Event `7045` → Rule `61138`
+- File added → Rule `554`
+
+Wazuh also displayed MITRE ATT&CK information for supported detections.
+
+A custom rule was created for the scheduled task persistence test:
+
+~~~text
+Rule ID: 100101
+Level: 10
+Description: CyberLab: Scheduled Task persistence detected
+MITRE: T1053 - Scheduled Task/Job
+~~~
 
 ---
 
-## 05. Detection Engineering & Tuning 🚧
+## 05. PowerShell Logging & Archives ✅
 
-After testing the native Wazuh detections, the project will be extended with detection engineering and alert tuning.
+PowerShell Script Block Logging was enabled and tested successfully.
 
-Planned work includes:
+The Wazuh Agent collects:
 
-* Custom Wazuh rules
-* Alert severity tuning
-* Improved alert context
-* Clearer event fields
-* Source IP and hostname context
-* Alert categorization
-* Noise reduction
-* False-positive reduction
-* SOC-focused dashboards
+~~~text
+Microsoft-Windows-PowerShell/Operational
+~~~
+
+Event ID `4104` was successfully generated and received by Wazuh.
+
+Wazuh archives were also enabled to retain events that do not necessarily generate alerts.
+
+Archive data is available through:
+
+~~~text
+wazuh-archives-*
+~~~
+
+Raw PowerShell Script Block content was successfully observed in the Wazuh archive data.
 
 ---
 
-## 06. Investigation & Incident Response 🚧
+## 06. File Integrity Monitoring ✅
 
-The final stage will focus on developing the investigation process rather than simply identifying individual alerts.
+Wazuh File Integrity Monitoring was configured and tested successfully.
 
-The intended workflow is:
+Realtime monitoring was verified on the Windows endpoint, including the Startup folder.
 
-```text
-Alert
-  ↓
-Triage
-  ↓
-Validation
-  ↓
-Evidence Collection
-  ↓
-Timeline Reconstruction
-  ↓
-Scoping
-  ↓
-Containment
-  ↓
-Eradication
-  ↓
-Recovery
-  ↓
-Lessons Learned
-```
+Test results:
 
-For each incident, the investigation will focus on understanding:
+- File creation detected
+- File deletion detected
+- Syscheck events received by Wazuh
+- Rule `554` triggered for file creation
 
-```text
-What happened?
-      ↓
-Where did it happen?
-      ↓
-When did it happen?
-      ↓
-Who was involved?
-      ↓
-What happened before and after?
-      ↓
-How far did the activity spread?
-      ↓
-What should be contained?
-      ↓
-How should the environment be recovered?
-```
+---
+
+## 07. Scheduled Task Detection ✅
+
+A controlled scheduled task was created to simulate a persistence technique.
+
+The task successfully:
+
+- appeared in Windows Task Scheduler
+- executed after logon
+- generated Windows Event ID `4698`
+- was received by Wazuh
+- triggered built-in Wazuh detection Rule `60228`
+
+A custom detection was also created specifically for the lab test using Rule ID `100101`.
+
+---
+
+## Challenges & Troubleshooting
+
+During implementation, several issues were identified and resolved.
+
+### PowerShell 4104 visibility
+
+PowerShell events were confirmed locally in Windows but were initially not visible as Wazuh alerts.
+
+The PowerShell Operational channel was added to the Wazuh Agent configuration and archive logging was enabled.
+
+The `4104` events were subsequently verified in Wazuh archives.
+
+### Wazuh Archives
+
+Wazuh was writing archive data locally, but the archive index was initially not available in Discover.
+
+The Filebeat Wazuh archives module was enabled:
+
+~~~text
+archives:
+  enabled: true
+~~~
+
+After enabling the module, the `wazuh-archives-*` index became available in Discover.
+
+### File Integrity Monitoring
+
+During FIM testing, the PowerShell event responsible for creating the test file was initially found before the actual Syscheck event.
+
+The Syscheck event was subsequently identified and confirmed as the actual file creation detection.
 
 ---
 
 ## Investigation Documentation
 
-Each completed scenario will be documented using:
+The lab successfully demonstrated the complete path from endpoint activity to security monitoring:
 
-```text
-Attack
-  ↓
-Windows Event / Artifact
-  ↓
-Wazuh Alert
-  ↓
+~~~text
+Security Activity
+      ↓
+Windows Event
+      ↓
+Wazuh Agent
+      ↓
+Wazuh Manager
+      ↓
+Alert / Archive
+      ↓
 Investigation
-  ↓
-Detection
-  ↓
-Mitigation
-```
+~~~
 
-The goal is to document not only the final alert, but also the reasoning used to investigate the activity and determine the appropriate response.
+The collected events provide the required telemetry to investigate authentication activity, process execution, PowerShell usage, persistence mechanisms, account activity and file changes.
 
 ---
 
 ## Technologies
 
-* Wazuh
-* Windows Server
-* Active Directory
-* Windows 11
-* Ubuntu Server
-* OPNsense
-* PowerShell
-* Windows Event Viewer
+- Wazuh
+- Wazuh Agent
+- Wazuh Manager
+- Wazuh Dashboard
+- OpenSearch
+- Filebeat
+- Windows Server
+- Active Directory
+- Windows 11
+- PowerShell
+- OPNsense
+- Ubuntu Server
+- Kali Linux
+
+---
 
 ## Current Status
 
-🚧 **In Progress**
+✅ **Completed**
 
-### Completed
+The Wazuh SOC Lab is fully operational.
 
-* Wazuh server deployed
-* Wazuh Dashboard configured
-* Windows 11 Wazuh agent deployed
-* Active Directory environment integrated
-* Windows Advanced Audit Policy configured
-* Windows security events successfully ingested into Wazuh
-* Wazuh endpoints verified as active
-* Initial event visibility confirmed
+The project objectives were achieved:
 
-### Current Focus
+- Windows endpoint successfully integrated with Wazuh
+- Security auditing successfully configured
+- Windows security events successfully collected
+- Detection scenarios successfully tested
+- Wazuh native detections verified
+- Custom detection rule created
+- PowerShell `4104` logging verified
+- Wazuh archives configured and verified
+- File Integrity Monitoring verified
+- Scheduled Task persistence detection verified
+- Security events investigated through Wazuh Dashboard
 
-* Build the first attack/detection scenario
-* Validate Wazuh detection coverage
-* Investigate generated security events
-* Build the SOC investigation workflow
-* Add custom detections and tuning
-* Document completed scenarios
+The lab provides a functional environment for Windows security monitoring and SOC-oriented detection work.
+```
 
----
 
